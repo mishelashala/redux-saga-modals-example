@@ -3,7 +3,7 @@ import { mount } from "enzyme";
 import { spy } from "sinon";
 import { App, UserList } from "../App";
 
-describe("<App />", () => {
+describe.skip("<App />", () => {
   it("should render the list of users", () => {
     const wrapper = mount(<App />);
 
@@ -39,7 +39,7 @@ describe("<App />", () => {
   });
 });
 
-describe("<UserList />", () => {
+describe.skip("<UserList />", () => {
   const users = {
     1: { id: 1, name: "John Doe" },
     2: { id: 2, name: "jenny doe" },

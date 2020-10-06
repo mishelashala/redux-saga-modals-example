@@ -1,7 +1,8 @@
 import React, { useEffect } from "react";
 import "./App.css";
 import { useSelector, useDispatch } from "react-redux";
-import { resolveModal, deleteUser } from "./index";
+import { resolveModal, deleteUser, FETCH_USER_LIST } from "./ducks/UserList";
+import { compose, path, defaultTo } from "lodash/fp";
 
 function noop() {}
 
@@ -147,14 +148,18 @@ export function UserList({ users }) {
   );
 }
 
+// selectUserListData :: State -> UserData
+const selectUserListData = compose(defaultTo({}), path(["userList", "data"]));
+
 export function App() {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    dispatch({ type: "FETCH_USER_LIST" });
-  }, [dispatch]);
+    dispatch({ type: FETCH_USER_LIST });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  const users = useSelector((state) => state.userList.data);
+  const users = useSelector(selectUserListData);
 
   return <UserList users={users} />;
 }
