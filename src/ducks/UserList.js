@@ -10,6 +10,7 @@ export const FETCH_USER_LIST_FAILURE = "FETCH_USER_LIST_FAILURE";
 
 export const DELETE_USER = "DELETE_USER";
 export const DELETE_USER_START = "DELETE_USER_START";
+export const DELETE_USER_SUCCESS = "DELETE_USER_SUCCESS";
 
 export const OPEN_MODAL = "OPEN_MODAL";
 export const CLOSE_MODAL = "CLOSE_MODAL";
@@ -21,7 +22,7 @@ export function closeModal() {
 
 export function openModal(modalName) {
   return {
-    type: "OPEN_MODAL",
+    type: OPEN_MODAL,
     payload: modalName,
   };
 }
@@ -39,7 +40,6 @@ export function* doFetchUserList() {
   try {
     yield put({ type: FETCH_USER_LIST_START });
     const data = yield call(userService.getList);
-    console.log("data:", data);
     yield put({ type: FETCH_USER_LIST_SUCCESS, payload: data });
   } catch (err) {
     yield put({ type: FETCH_USER_LIST_FAILURE });
@@ -76,7 +76,7 @@ export function* doHandleDeleteUser(action) {
   try {
     yield put({ type: DELETE_USER_START });
     yield call(userService.deleteUserById, userId);
-    yield put({ type: FETCH_USER_LIST_SUCCESS });
+    yield put({ type: DELETE_USER_SUCCESS });
     yield call(doFetchUserList);
     yield put(closeModal());
   } catch (err) {
