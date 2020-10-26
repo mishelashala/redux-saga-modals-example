@@ -36,18 +36,49 @@ export function* waitForModalResponse(modalName) {
   return yield take(RESOLVE_MODAL);
 }
 
+export function fetchUserListStart() {
+  return { type: FETCH_USER_LIST_START };
+}
+
+export function fetchUserListSuccess(payload) {
+  return {
+    type: FETCH_USER_LIST_SUCCESS,
+    payload,
+  };
+}
+
+export function fetchUserListFailure(err) {
+  return {
+    type: FETCH_USER_LIST_FAILURE,
+    payload: err,
+    error: true,
+  };
+}
+
 export function* doFetchUserList() {
   try {
-    yield put({ type: FETCH_USER_LIST_START });
+    yield put(fetchUserListStart());
     const data = yield call(userService.getList);
-    yield put({ type: FETCH_USER_LIST_SUCCESS, payload: data });
+    yield put(fetchUserListSuccess(data));
   } catch (err) {
-    yield put({ type: FETCH_USER_LIST_FAILURE });
+    yield put(fetchUserListFailure(err));
   }
 }
 
 export function deleteUser(userId) {
   return { type: DELETE_USER, payload: userId };
+}
+
+export function deleteUserByIdStart() {
+  return { type: DELETE_USER_START };
+}
+
+export function deleteUserByIdSuccess() {
+  return { type: DELETE_USER_SUCCESS };
+}
+
+export function deleteUserByIdFailure(err) {
+  return { type: FETCH_USER_LIST_FAILURE, payload: err, error: true };
 }
 
 export function* doHandleDeleteUser(action) {
@@ -74,13 +105,13 @@ export function* doHandleDeleteUser(action) {
   }
 
   try {
-    yield put({ type: DELETE_USER_START });
+    yield put(deleteUserByIdStart());
     yield call(userService.deleteUserById, userId);
-    yield put({ type: DELETE_USER_SUCCESS });
+    yield put(deleteUserByIdSuccess());
     yield call(doFetchUserList);
     yield put(closeModal());
   } catch (err) {
-    yield put({ type: FETCH_USER_LIST_FAILURE });
+    yield put(deleteUserByIdFailure(err));
   }
 }
 
@@ -100,7 +131,6 @@ const initalState = {
 };
 
 export function userListReducer(state = initalState, action) {
-  console.log(action);
   switch (action.type) {
     case FETCH_USER_LIST_START:
       return {
