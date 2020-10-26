@@ -1,3 +1,4 @@
+import { assocPath, pipe } from "lodash/fp";
 import { call, put, take, takeEvery } from "redux-saga/effects";
 import { UserService } from "../services/userService";
 
@@ -133,39 +134,19 @@ const initalState = {
 export function userListReducer(state = initalState, action) {
   switch (action.type) {
     case FETCH_USER_LIST_START:
-      return {
-        ...state,
-        userList: {
-          ...state.userList,
-          isLoding: true,
-        },
-      };
+      return assocPath(["userList", "isLoading"], true, state);
 
     case FETCH_USER_LIST_SUCCESS:
-      return {
-        ...state,
-        userList: {
-          ...state.userList,
-          isLoding: false,
-          data: action.payload,
-        },
-      };
+      return pipe(
+        assocPath(["userList", "isLoading"], false),
+        assocPath(["userList", "data"], action.payload)
+      )(state);
 
     case OPEN_MODAL:
-      return {
-        ...state,
-        modal: {
-          name: action.payload,
-        },
-      };
+      return assocPath(["modal", "name"], action.payload);
 
     case CLOSE_MODAL:
-      return {
-        ...state,
-        modal: {
-          name: null,
-        },
-      };
+      return assocPath(["modal", "name"], null);
 
     default:
       return state;
