@@ -12,6 +12,7 @@ export const FETCH_USER_LIST_FAILURE = "FETCH_USER_LIST_FAILURE";
 export const DELETE_USER = "DELETE_USER";
 export const DELETE_USER_START = "DELETE_USER_START";
 export const DELETE_USER_SUCCESS = "DELETE_USER_SUCCESS";
+export const DELETE_USER_FAILURE = "DELETE_USER_FAILURE";
 
 export const OPEN_MODAL = "OPEN_MODAL";
 export const CLOSE_MODAL = "CLOSE_MODAL";
@@ -79,7 +80,7 @@ export function deleteUserByIdSuccess() {
 }
 
 export function deleteUserByIdFailure(err) {
-  return { type: FETCH_USER_LIST_FAILURE, payload: err, error: true };
+  return { type: DELETE_USER_FAILURE, payload: err, error: true };
 }
 
 export function* doHandleDeleteUser(action) {

@@ -7,6 +7,20 @@ import {
   resolveModal,
   DELETE_USER_START,
   DELETE_USER_SUCCESS,
+  openModal,
+  OPEN_MODAL,
+  CLOSE_MODAL,
+  RESOLVE_MODAL,
+  fetchUserListStart,
+  FETCH_USER_LIST_START,
+  fetchUserListFailure,
+  FETCH_USER_LIST_SUCCESS,
+  fetchUserListSuccess,
+  FETCH_USER_LIST_FAILURE,
+  deleteUserByIdStart,
+  deleteUserByIdSuccess,
+  DELETE_USER_FAILURE,
+  deleteUserByIdFailure,
 } from "../UserList";
 import { UserService } from "../../services/userService";
 
@@ -54,5 +68,77 @@ describe("doHandleDeleteUser", () => {
       .put({ type: DELETE_USER_SUCCESS })
       .put(closeModal())
       .run();
+  });
+});
+
+describe("action creators", () => {
+  describe("Modal related", () => {
+    it("should create an open modal action", () => {
+      const action = openModal("name");
+
+      expect(action.type).toEqual(OPEN_MODAL);
+      expect(action.payload).toEqual("name");
+    });
+
+    it("should create a close modal action", () => {
+      const action = closeModal();
+
+      expect(action.type).toEqual(CLOSE_MODAL);
+    });
+
+    it("should create a resolve modal action", () => {
+      const action = resolveModal("name");
+
+      expect(action.type).toEqual(RESOLVE_MODAL);
+      expect(action.payload).toEqual("name");
+    });
+  });
+
+  describe("Fetch User List related", () => {
+    it("should create a fetch user list start action", () => {
+      const action = fetchUserListStart();
+
+      expect(action.type).toEqual(FETCH_USER_LIST_START);
+    });
+
+    it("should create a fetch user list success action", () => {
+      const users = { 1: { id: 1, name: "john" } };
+      const action = fetchUserListSuccess(users);
+
+      expect(action.type).toEqual(FETCH_USER_LIST_SUCCESS);
+      expect(action.payload).toEqual(users);
+    });
+
+    it("should create a fetch user list failure action", () => {
+      const err = new Error("Something went wrong");
+      const action = fetchUserListFailure(err);
+
+      expect(action.type).toEqual(FETCH_USER_LIST_FAILURE);
+      expect(action.error).toBe(true);
+      expect(action.payload).toEqual(err);
+    });
+  });
+
+  describe("Delete User By Id related", () => {
+    it("should create a delete user by id start action", () => {
+      const action = deleteUserByIdStart();
+
+      expect(action.type).toEqual(DELETE_USER_START);
+    });
+
+    it("should create a delete user by id success", () => {
+      const action = deleteUserByIdSuccess();
+
+      expect(action.type).toEqual(DELETE_USER_SUCCESS);
+    });
+
+    it("should create a delete user by id failure", () => {
+      const err = new Error("something went wrong");
+      const action = deleteUserByIdFailure(err);
+
+      expect(action.type).toEqual(DELETE_USER_FAILURE);
+      expect(action.error).toBe(true);
+      expect(action.payload).toEqual(err);
+    });
   });
 });
