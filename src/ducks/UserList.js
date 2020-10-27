@@ -122,17 +122,19 @@ export function* userListSaga() {
   yield takeEvery(DELETE_USER, doHandleDeleteUser);
 }
 
-const initalState = {
+export const initialState = {
   userList: {
-    isLoding: true,
     data: {},
+    error: null,
+    isDeleting: false,
+    isLoding: true,
   },
   modal: {
     name: null,
   },
 };
 
-export function userListReducer(state = initalState, action) {
+export function userListReducer(state = initialState, action) {
   switch (action.type) {
     case FETCH_USER_LIST_START:
       return assocPath(["userList", "isLoading"], true, state);
@@ -143,11 +145,32 @@ export function userListReducer(state = initalState, action) {
         assocPath(["userList", "data"], action.payload)
       )(state);
 
+    case FETCH_USER_LIST_FAILURE:
+      return pipe(
+        assocPath(["userList", "isLoading"], false),
+        assocPath(["userList", "error"], action.payload)
+      )(state);
+
+    case DELETE_USER_START:
+      return assocPath(["userList", "isDeleting"], true, state);
+
+    case DELETE_USER_SUCCESS:
+      return pipe(
+        assocPath(["userList", "isDeleting"], false),
+        assocPath(["userList", "error"], null)
+      )(state);
+
+    case DELETE_USER_FAILURE:
+      return pipe(
+        assocPath(["userList", "isDeleting"], false),
+        assocPath(["userList", "error"], action.payload)
+      )(state);
+
     case OPEN_MODAL:
-      return assocPath(["modal", "name"], action.payload);
+      return assocPath(["modal", "name"], action.payload, state);
 
     case CLOSE_MODAL:
-      return assocPath(["modal", "name"], null);
+      return assocPath(["modal", "name"], null, state);
 
     default:
       return state;

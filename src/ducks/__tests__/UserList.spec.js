@@ -1,3 +1,4 @@
+import { assocPath, pipe } from "lodash/fp";
 import { expectSaga } from "redux-saga-test-plan";
 import { call } from "redux-saga-test-plan/matchers";
 import {
@@ -21,6 +22,8 @@ import {
   deleteUserByIdSuccess,
   DELETE_USER_FAILURE,
   deleteUserByIdFailure,
+  userListReducer,
+  initialState,
 } from "../UserList";
 import { UserService } from "../../services/userService";
 
@@ -72,21 +75,21 @@ describe("doHandleDeleteUser", () => {
 });
 
 describe("action creators", () => {
-  describe("Modal related", () => {
-    it("should create an open modal action", () => {
+  describe("Modal", () => {
+    test("openModal()", () => {
       const action = openModal("name");
 
       expect(action.type).toEqual(OPEN_MODAL);
       expect(action.payload).toEqual("name");
     });
 
-    it("should create a close modal action", () => {
+    test("closeModal()", () => {
       const action = closeModal();
 
       expect(action.type).toEqual(CLOSE_MODAL);
     });
 
-    it("should create a resolve modal action", () => {
+    test("resolveModal()", () => {
       const action = resolveModal("name");
 
       expect(action.type).toEqual(RESOLVE_MODAL);
@@ -94,14 +97,14 @@ describe("action creators", () => {
     });
   });
 
-  describe("Fetch User List related", () => {
-    it("should create a fetch user list start action", () => {
+  describe("Fetch User List", () => {
+    test("fetchUserListStart()", () => {
       const action = fetchUserListStart();
 
       expect(action.type).toEqual(FETCH_USER_LIST_START);
     });
 
-    it("should create a fetch user list success action", () => {
+    test("fetchUserListSuccess()", () => {
       const users = { 1: { id: 1, name: "john" } };
       const action = fetchUserListSuccess(users);
 
@@ -109,7 +112,7 @@ describe("action creators", () => {
       expect(action.payload).toEqual(users);
     });
 
-    it("should create a fetch user list failure action", () => {
+    test("fetchUserListFailure()", () => {
       const err = new Error("Something went wrong");
       const action = fetchUserListFailure(err);
 
@@ -119,26 +122,102 @@ describe("action creators", () => {
     });
   });
 
-  describe("Delete User By Id related", () => {
-    it("should create a delete user by id start action", () => {
+  describe("Delete User By Id", () => {
+    test("deleteUserByIdStart()", () => {
       const action = deleteUserByIdStart();
 
       expect(action.type).toEqual(DELETE_USER_START);
     });
 
-    it("should create a delete user by id success", () => {
+    test("deleteUserByIdSuccess()", () => {
       const action = deleteUserByIdSuccess();
 
       expect(action.type).toEqual(DELETE_USER_SUCCESS);
     });
 
-    it("should create a delete user by id failure", () => {
+    test("deleteUserByIdFailure()", () => {
       const err = new Error("something went wrong");
       const action = deleteUserByIdFailure(err);
 
       expect(action.type).toEqual(DELETE_USER_FAILURE);
       expect(action.error).toBe(true);
       expect(action.payload).toEqual(err);
+    });
+  });
+});
+
+describe("User List Reducer", () => {
+  describe("Modal", () => {
+    test("OPEN_MODAL", () => {
+      const action = openModal("name");
+      const result = userListReducer(initialState, action);
+
+      expect(result.modal.name).toEqual("name");
+    });
+
+    test("CLOSE_MODAL", () => {
+      const action = closeModal();
+      const result = userListReducer(initialState, action);
+
+      expect(result.modal.name).toEqual(null);
+    });
+  });
+
+  describe("Fetch User List", () => {
+    test("FETCH_USER_LIST_START", () => {
+      const action = fetchUserListStart();
+      const result = userListReducer(initialState, action);
+
+      expect(result.userList.isLoading).toBe(true);
+    });
+
+    test("FETCH_USER_LIST_SUCCESS", () => {
+      const users = { 1: { id: 1, name: "john" } };
+      const action = fetchUserListSuccess(users);
+      const result = userListReducer(initialState, action);
+
+      expect(result.userList.isLoading).toBe(false);
+      expect(result.userList.data).toEqual(users);
+    });
+
+    test("FETCH_USER_LIST_FAILURE", () => {
+      const err = new Error("something went wrong");
+      const action = fetchUserListFailure(err);
+      const result = userListReducer(initialState, action);
+
+      expect(result.userList.isLoading).toBe(false);
+      expect(result.userList.error).toEqual(err);
+    });
+  });
+
+  describe("Delete User By Id", () => {
+    test("DELETE_USER_START", () => {
+      const action = deleteUserByIdStart();
+      const result = userListReducer(initialState, action);
+
+      expect(result.userList.isDeleting).toEqual(true);
+    });
+
+    test("DELETE_USER_SUCCESS", () => {
+      const state = pipe(
+        assocPath(["userList", "isDeleting"], true),
+        assocPath(["userList", "error"], new Error("some error"))
+      )(initialState);
+
+      const action = deleteUserByIdSuccess();
+      const result = userListReducer(state, action);
+
+      expect(result.userList.isDeleting).toBe(false);
+      expect(result.userList.error).toBe(null);
+    });
+
+    test("DELETE_USER_FAILURE", () => {
+      const err = new Error("something went wrong");
+      const action = deleteUserByIdFailure(err);
+      const result = userListReducer(initialState, action);
+
+      expect(result.userList.isDeleting).toBe(false);
+      expect(result.userList.error).toEqual(err);
     });
   });
 });
