@@ -1,4 +1,4 @@
-import { assocPath, pipe } from "lodash/fp";
+import { pipe } from "lodash/fp";
 import { expectSaga } from "redux-saga-test-plan";
 import { call } from "redux-saga-test-plan/matchers";
 import {
@@ -24,6 +24,8 @@ import {
   deleteUserByIdFailure,
   userListReducer,
   initialState,
+  setUserListLoading,
+  setUserListError,
 } from "../UserList";
 import { UserService } from "../../services/userService";
 
@@ -200,8 +202,8 @@ describe("User List Reducer", () => {
 
     test("DELETE_USER_SUCCESS", () => {
       const state = pipe(
-        assocPath(["userList", "isDeleting"], true),
-        assocPath(["userList", "error"], new Error("some error"))
+        setUserListLoading(true),
+        setUserListError(new Error("some error"))
       )(initialState);
 
       const action = deleteUserByIdSuccess();

@@ -134,43 +134,47 @@ export const initialState = {
   },
 };
 
+export const setUserListLoading = assocPath(["userList", "isLoading"]);
+export const setUserListError = assocPath(["userList", "error"]);
+export const setUserListData = assocPath(["userList", "data"]);
+export const setUserListDeleting = assocPath(["userList", "isDeleting"]);
+
+const setModalName = assocPath(["modal", "name"]);
+
 export function userListReducer(state = initialState, action) {
   switch (action.type) {
     case FETCH_USER_LIST_START:
-      return assocPath(["userList", "isLoading"], true, state);
+      return setUserListLoading(true, state);
 
     case FETCH_USER_LIST_SUCCESS:
       return pipe(
-        assocPath(["userList", "isLoading"], false),
-        assocPath(["userList", "data"], action.payload)
+        setUserListLoading(false),
+        setUserListData(action.payload)
       )(state);
 
     case FETCH_USER_LIST_FAILURE:
       return pipe(
-        assocPath(["userList", "isLoading"], false),
-        assocPath(["userList", "error"], action.payload)
+        setUserListLoading(false),
+        setUserListError(action.payload)
       )(state);
 
     case DELETE_USER_START:
-      return assocPath(["userList", "isDeleting"], true, state);
+      return setUserListDeleting(true, state);
 
     case DELETE_USER_SUCCESS:
-      return pipe(
-        assocPath(["userList", "isDeleting"], false),
-        assocPath(["userList", "error"], null)
-      )(state);
+      return pipe(setUserListDeleting(false), setUserListError(null))(state);
 
     case DELETE_USER_FAILURE:
       return pipe(
-        assocPath(["userList", "isDeleting"], false),
-        assocPath(["userList", "error"], action.payload)
+        setUserListDeleting(false),
+        setUserListError(action.payload)
       )(state);
 
     case OPEN_MODAL:
-      return assocPath(["modal", "name"], action.payload, state);
+      return setModalName(action.payload, state);
 
     case CLOSE_MODAL:
-      return assocPath(["modal", "name"], null, state);
+      return setModalName(null, state);
 
     default:
       return state;
