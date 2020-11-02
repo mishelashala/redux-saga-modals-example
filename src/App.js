@@ -114,7 +114,12 @@ function ModalFooter({
   );
 }
 
-export function UserList({ users }) {
+// selectUserListData :: State -> UserData
+const selectUserListData = compose(defaultTo({}), path(["userList", "data"]));
+
+export function UserList() {
+  const users = useSelector(selectUserListData);
+
   const isDeleteModalOpen = useSelector(
     (state) => state.modal.name === "DeleteUserModal"
   );
@@ -148,9 +153,6 @@ export function UserList({ users }) {
   );
 }
 
-// selectUserListData :: State -> UserData
-const selectUserListData = compose(defaultTo({}), path(["userList", "data"]));
-
 export function App() {
   const dispatch = useDispatch();
 
@@ -159,9 +161,7 @@ export function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const users = useSelector(selectUserListData);
-
-  return <UserList users={users} />;
+  return <UserList />;
 }
 
 export default App;

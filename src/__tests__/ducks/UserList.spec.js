@@ -26,7 +26,7 @@ import {
   initialState,
   setUserListLoading,
   setUserListError,
-} from "../UserList";
+} from "../../ducks/UserList";
 import { UserService } from "../../services/userService";
 
 describe("doHandleDeleteUser", () => {

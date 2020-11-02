@@ -127,7 +127,7 @@ export const initialState = {
     data: {},
     error: null,
     isDeleting: false,
-    isLoding: true,
+    isLoading: true,
   },
   modal: {
     name: null,
