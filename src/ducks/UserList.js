@@ -1,8 +1,6 @@
 import { assocPath, pipe } from "lodash/fp";
 import { call, put, take, takeEvery } from "redux-saga/effects";
-import { UserService } from "../services/userService";
-
-const userService = UserService();
+import { userService } from "../services/userService";
 
 export const FETCH_USER_LIST = "FETCH_USER_LIST";
 export const FETCH_USER_LIST_START = "FETCH_USER_LIST_START";
@@ -139,7 +137,7 @@ export const setUserListError = assocPath(["userList", "error"]);
 export const setUserListData = assocPath(["userList", "data"]);
 export const setUserListDeleting = assocPath(["userList", "isDeleting"]);
 
-const setModalName = assocPath(["modal", "name"]);
+export const setModalName = assocPath(["modal", "name"]);
 
 export function userListReducer(state = initialState, action) {
   switch (action.type) {

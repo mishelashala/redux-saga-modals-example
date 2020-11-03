@@ -15,3 +15,5 @@ export function UserService() {
 
   return { getList, deleteUserById };
 }
+
+export const userService = UserService();
