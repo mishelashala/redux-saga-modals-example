@@ -1,4 +1,5 @@
 import { pipe } from "lodash/fp";
+import { take, put } from "redux-saga/effects";
 import { expectSaga } from "redux-saga-test-plan";
 import * as matchers from "redux-saga-test-plan/matchers";
 import {
@@ -30,97 +31,107 @@ import {
 } from "../../ducks/UserList";
 import { userService } from "../../services/userService";
 
-describe("doHandleDeleteUser", () => {
-  it("should open DeleteUserModal, then close it", () => {
-    const action = { payload: 1 };
-    return expectSaga(doHandleDeleteUser, action)
-      .provide([
-        [
-          matchers.call.fn(waitForModalResponse),
-          resolveModal({ action: "close" }),
-        ],
-      ])
-      .call.fn(waitForModalResponse, "DeleteUserModal")
-      .put(closeModal())
-      .run();
+describe("Redux Saga", () => {
+  test("waitForModalResponse", () => {
+    const modalName = "some-name";
+    const gen = waitForModalResponse(modalName);
+
+    expect(gen.next().value).toEqual(put(openModal(modalName)));
+    expect(gen.next().value).toEqual(take(RESOLVE_MODAL));
   });
 
-  it("should open DeleteUserModal, then open ConfirmDeleteUserModal and then close it", () => {
-    const action = { payload: 1 };
+  describe("doHandleDeleteUser", () => {
+    it("should open DeleteUserModal, then close it", () => {
+      const action = { payload: 1 };
+      return expectSaga(doHandleDeleteUser, action)
+        .provide([
+          [
+            matchers.call.fn(waitForModalResponse),
+            resolveModal({ action: "close" }),
+          ],
+        ])
+        .call.fn(waitForModalResponse, "DeleteUserModal")
+        .put(closeModal())
+        .run();
+    });
 
-    return expectSaga(doHandleDeleteUser, action)
-      .provide([
-        [
-          matchers.call.fn(waitForModalResponse),
-          resolveModal({ action: "accept" }),
-        ],
-        [
-          matchers.call.fn(waitForModalResponse),
-          resolveModal({ action: "close" }),
-        ],
-      ])
-      .call.fn(waitForModalResponse, "DeleteUserModal")
-      .call.fn(waitForModalResponse, "ConfirmDeleteUserModal")
-      .put(closeModal())
-      .run();
+    it("should open DeleteUserModal, then open ConfirmDeleteUserModal and then close it", () => {
+      const action = { payload: 1 };
+
+      return expectSaga(doHandleDeleteUser, action)
+        .provide([
+          [
+            matchers.call.fn(waitForModalResponse),
+            resolveModal({ action: "accept" }),
+          ],
+          [
+            matchers.call.fn(waitForModalResponse),
+            resolveModal({ action: "close" }),
+          ],
+        ])
+        .call.fn(waitForModalResponse, "DeleteUserModal")
+        .call.fn(waitForModalResponse, "ConfirmDeleteUserModal")
+        .put(closeModal())
+        .run();
+    });
+
+    it("should delete the user", () => {
+      const userId = 1;
+      const action = { payload: userId };
+
+      return expectSaga(doHandleDeleteUser, action)
+        .provide([
+          [
+            matchers.call.fn(waitForModalResponse),
+            resolveModal({ action: "accept" }),
+          ],
+          [
+            matchers.call.fn(waitForModalResponse),
+            resolveModal({ action: "accept" }),
+          ],
+          [matchers.call.fn(userService.deleteUserById, userId), null],
+          [
+            matchers.call.fn(userService.getList, {
+              2: { id: 2, name: "John Doe" },
+            }),
+          ],
+        ])
+        .call.fn(waitForModalResponse, "DeleteUserModal")
+        .call.fn(waitForModalResponse, "ConfirmDeleteUserModal")
+        .put({ type: DELETE_USER_START })
+        .put({ type: DELETE_USER_SUCCESS })
+        .put(closeModal())
+        .run();
+    });
   });
 
-  it("should delete the user", () => {
-    const userId = 1;
-    const action = { payload: userId };
+  describe("doFetchUserList()", () => {
+    it("should successfully fetch the list of users", () => {
+      const users = {
+        1: {
+          id: 1,
+          name: "jenny doe",
+        },
+      };
 
-    return expectSaga(doHandleDeleteUser, action)
-      .provide([
-        [
-          matchers.call.fn(waitForModalResponse),
-          resolveModal({ action: "accept" }),
-        ],
-        [
-          matchers.call.fn(waitForModalResponse),
-          resolveModal({ action: "accept" }),
-        ],
-        [matchers.call.fn(userService.deleteUserById, userId), null],
-        [
-          matchers.call.fn(userService.getList, {
-            2: { id: 2, name: "John Doe" },
-          }),
-        ],
-      ])
-      .call.fn(waitForModalResponse, "DeleteUserModal")
-      .call.fn(waitForModalResponse, "ConfirmDeleteUserModal")
-      .put({ type: DELETE_USER_START })
-      .put({ type: DELETE_USER_SUCCESS })
-      .put(closeModal())
-      .run();
-  });
-});
+      return expectSaga(doFetchUserList)
+        .provide([[matchers.call.fn(userService.getList), users]])
+        .put(fetchUserListStart())
+        .call.fn(userService.getList)
+        .put(fetchUserListSuccess(users))
+        .run();
+    });
 
-describe("doFetchUserList()", () => {
-  it("should successfully fetch the list of users", () => {
-    const users = {
-      1: {
-        id: 1,
-        name: "jenny doe",
-      },
-    };
+    it("should fail fetching the list of users", () => {
+      const err = new Error("something went wrong");
 
-    return expectSaga(doFetchUserList)
-      .provide([[matchers.call.fn(userService.getList), users]])
-      .put(fetchUserListStart())
-      .call.fn(userService.getList)
-      .put(fetchUserListSuccess(users))
-      .run();
-  });
-
-  it("should fail fetching the list of users", () => {
-    const err = new Error("something went wrong");
-
-    return expectSaga(doFetchUserList)
-      .provide([[matchers.call.fn(userService.getList), Promise.reject(err)]])
-      .put(fetchUserListStart())
-      .call.fn(userService.getList)
-      .put(fetchUserListFailure(err))
-      .run();
+      return expectSaga(doFetchUserList)
+        .provide([[matchers.call.fn(userService.getList), Promise.reject(err)]])
+        .put(fetchUserListStart())
+        .call.fn(userService.getList)
+        .put(fetchUserListFailure(err))
+        .run();
+    });
   });
 });
 
